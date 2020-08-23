@@ -139,30 +139,84 @@ def start(start):
     #create session link
     session = Session(engine)
 
-    #results = 
+
+
+    most_active_weather_station = session.query(Measurement.date, Measurement.tobs).\
+    filter(Measurement.station == 'USC00519281').all()
+
+    search_term = start
+    
 
 
     #close session
     session.close()
-    return(
-        f"Start"
-    )
+
+    # find lowest, highest, and avg temp of most active station
+    # based on end date
+    lowest_temp = session.query(func.min(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_term).scalar()
+    
+    highest_temp = session.query(func.max(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_term).scalar()
+
+    avg_temp = session.query(func.avg(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_term).scalar()
+
+    for date in most_active_weather_station:
+        if start == search_term:
+            return(
+                f"The lowest temperature is {lowest_temp}<br>"
+                f"The highest temperature is {highest_temp}<br>"
+                f"The average temperature is {avg_temp}<br>"
+            )
+    return jsonify({"error": f"Date {start} not found."}), 404
+
 #Define end route
 @app.route("/api/v1.0/<start>/<end>")
-def end(end):
+def end(start, end):
 
     #create session link
     session = Session(engine)
 
-    #results = 
+    most_active_weather_station = session.query(Measurement.date, Measurement.tobs).\
+    filter(Measurement.station == 'USC00519281').all()
+
+    search_start = start
+    search_end = end
+
 
 
     #close session
     session.close()
-    return(
-        f"End"
-    )
 
+    # find lowest, highest, and avg temp of most active station
+    # based on start date and end date
+    lowest_temp = session.query(func.min(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_start).\
+    filter(Measurement.date <= search_end).scalar()
+    
+    highest_temp = session.query(func.max(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_start).\
+    filter(Measurement.date <= search_end).scalar()
+
+    avg_temp = session.query(func.avg(Measurement.tobs)).\
+    filter(Measurement.station == 'USC00519281').\
+    filter(Measurement.date >= search_start).\
+    filter(Measurement.date <= search_end).scalar()
+
+    for date in most_active_weather_station:
+        if start == search_start and end == search_end:
+            return(
+                f"The lowest temperature is {lowest_temp}<br>"
+                f"The highest temperature is {highest_temp}<br>"
+                f"The average temperature is {avg_temp}<br>"
+            )
+    return jsonify({"error": f"Dates {start} and {end} not found."}), 404
 
 #run the app
 if __name__ == "__main__":
